@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Overtrue\LaravelUEditor\Events\Uploaded;
 use Overtrue\LaravelUEditor\Events\Uploading;
 use Overtrue\LaravelUEditor\Events\Catched;
+use Overtrue\LaravelUEditor\Events\Catching;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -105,6 +106,15 @@ class StorageManager
         
         $list = array();
         foreach ($urls as $key => $url) {
+            if ($this->eventSupport()) {
+                $img = event(new Catching($url), [], true);
+                clock($img);
+                if (!is_null($img)) {
+                    array_push($list, $img);
+                    continue;
+                }
+            }
+
             $img = $this->download($url, $config);
             $item = [];
             if ($img['state'] === 'SUCCESS') {
